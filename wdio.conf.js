@@ -1,5 +1,17 @@
 exports.config = {
-
+    //
+    // =====================
+    // Server Configurations
+    // =====================
+    // Host address of the running Selenium server. This information is usually obsolete as
+    // WebdriverIO automatically connects to localhost. Also, if you are using one of the
+    // supported cloud services like Sauce Labs, Browserstack, or Testing Bot you don't
+    // need to define host and port information because WebdriverIO can figure that out
+    // according to your user and key information. However, if you are using a private Selenium
+    // backend you should define the host address, port, and path here.
+    //
+    host: 'selenium-ch',
+    port: 4444,
     //
     // ==================
     // Specify Test Files
@@ -40,11 +52,11 @@ exports.config = {
     //
     capabilities: [{
         // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-        // grid with only 5 firefox instance available you can make sure that not more than
-        // 5 instance gets started at a time.
+        // grid with only 5 firefox instances available you can make sure that not more than
+        // 5 instances get started at a time.
         maxInstances: 5,
         //
-        browserName: 'phantomjs' // options: chrome || firefox || phantomjs
+        browserName: 'chrome'
     }],
     //
     // ===================
@@ -62,6 +74,10 @@ exports.config = {
     //
     // Enables colors for log output.
     coloredLogs: true,
+    //
+    // If you only want to run your tests until a specific amount of tests have failed use
+    // bail (default is 0 - don't bail, run all tests).
+    bail: 0,
     //
     // Saves a screenshot to a given path if a command fails.
     screenshotPath: './errorShots/',
@@ -102,7 +118,8 @@ exports.config = {
     // Services take over a specific job you don't want to take care of. They enhance
     // your test setup with almost no effort. Unlike plugins, they don't add new
     // commands. Instead, they hook themselves up into the test process.
-    services: ['selenium-standalone'],//
+    services: ['selenium-standalone'],
+    //
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber
     // see also: http://webdriver.io/guide/testrunner/frameworks.html
@@ -114,30 +131,22 @@ exports.config = {
     // Test reporter for stdout.
     // The only one supported by default is 'dot'
     // see also: http://webdriver.io/guide/testrunner/reporters.html
-    reporters: ['spec'],
+    reporters: ['spec', 'json','junit','allure'],
+    reporterOptions: {
+        outputDir: './reporters'
+      },
     //
     // Options to be passed to Mocha.
     // See the full list at http://mochajs.org/
     mochaOpts: {
         ui: 'bdd',
         compilers: ['js:babel-register'],
-        require: ['./test/helpers/common.js']
+        require: ['./test/helpers/common.js'],
+        reporter: 'mochawesome',
+        ignoreLeaks: true,
+        asyncOnly: true
     },
-    //
-    // =====
-    // Hooks
-    // =====
-    // WebdriverIO provides several hooks you can use to interfere with the test process in order to enhance
-    // it and to build services around it. You can either apply a single function or an array of
-    // methods to it. If one of them returns with a promise, WebdriverIO will wait until that promise got
-    // resolved to continue.
-    //
-    // Gets executed once before all workers get launched.
-    // onPrepare: function (config, capabilities) {
-    // },
-    //
-    // Gets executed before test execution begins. At this point you can access all global
-    // variables, such as `browser`. It is the perfect place to define custom commands.
+
     before: function (capabilities, specs) {
         var sinon = require('sinon');
         // http://sinonjs.org/
@@ -152,6 +161,29 @@ exports.config = {
         global.assert = chai.assert;
         chai.Should();
     },
+
+    //
+    // =====
+    // Hooks
+    // =====
+    // WebdriverIO provides several hooks you can use to interfere with the test process in order to enhance
+    // it and to build services around it. You can either apply a single function or an array of
+    // methods to it. If one of them returns with a promise, WebdriverIO will wait until that promise got
+    // resolved to continue.
+    //
+    // Gets executed once before all workers get launched.
+    // onPrepare: function (config, capabilities) {
+    // },
+    //
+    // Gets executed just before initialising the webdriver session and test framework. It allows you
+    // to manipulate configurations depending on the capability or spec.
+    // beforeSession: function (config, capabilities, specs) {
+    // },
+    //
+    // Gets executed before test execution begins. At this point you can access all global
+    // variables, such as `browser`. It is the perfect place to define custom commands.
+    // before: function (capabilities, specs) {
+    // },
     //
     // Hook that gets executed before the suite starts
     // beforeSuite: function (suite) {
@@ -190,6 +222,10 @@ exports.config = {
     // Gets executed after all tests are done. You still have access to all global variables from
     // the test.
     // after: function (result, capabilities, specs) {
+    // },
+    //
+    // Gets executed right after terminating the webdriver session.
+    // afterSession: function (config, capabilities, specs) {
     // },
     //
     // Gets executed after all workers got shut down and the process is about to exit. It is not
